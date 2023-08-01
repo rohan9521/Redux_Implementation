@@ -1,70 +1,138 @@
-# Getting Started with Create React App
+# Redux
+  ### What is Redux?
+  ### What are components of Redux?
+  ### What is CombineRedcucer ?
+  ### Why use Redux instead of Context API?
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## What is Redux?
+   Redux is a state management javascript library that can be used in a web app. 
+   It is Predictable - All state values defined inside redux are consitent through out the Components (functional or class based) wherever                           they these states are used. So their behaviour and values are predictable throughout the application.
+   It is Centralized - All the states are defined at one place and they are modified at one centeralized place only.
+   It is Debuggable - Since its predictable, this makes redux easy to debug.
+   
+   It provides a container or a store for taking care of states. There can be one or more states available inside the store. Moreover no   
+   state know about the other state how they will change or what action will trigger the change. We can make our own action and define the 
+   behaviour of the state when those actions are dispatched.
+   They are very useful in web apps for large sizes. Although context api can also be used but Redux is more suitable for large 
+   applications.
+   We will discuss about that in later part of the discussion.
 
-## Available Scripts
+## What are components of Redux ?
 
-In the project directory, you can run:
+  * Reducers - These are the state that are defined inside the store. They can have action and initial value also.
 
-### `npm start`
+                 ....
+                  const initialState = {
+                      product: 10
+                  }
+                  const ProductReducer = (state = initialState)=>{
+                        return state
+                  }
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+                ....
+    This is a reducer with a state which has initial value 10. But this reducer alone will not work. We need to put it in a                    Store.
+    
+* Store -  This is the place where all the reducers gets stored , the value of the state is read from here and modified from here.
+           Creating a store
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+           ...
+             import { legacy_createStore as createStore  } from 'redux'; // createStore is deprecated so we need to use legacy_createStore.
+              import { composeWithDevTools} from 'redux-devtools-extension' // extension for monitoring states in redux
+              const store = createStore(productReducer,composeWithDevTools()) 
+            ...
+ * Actions - These are the values which define the behaviour of a state or how the state will be modified when the action gets dispatched.
 
-### `npm test`
+             ...
+               const initialState = {
+                      product: 10
+                  }
+                  const ProductReducer = (state = initialState,action)=>{
+                       switch(action.type){
+                           case 'INC' :
+                           return {...state, product: product+1}
+                           case 'DEC' :
+                           return {...state, product: product-1}
+                           default:               
+                          return state
+                     }
+                  }
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+   
+             ...
 
-### `npm run build`
+Now lets see how we dispatch an action 
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+    ...
+       functiona Component() {
+              return (
+                <div >
+                   
+                    <div>
+                        <h1 >Product : {props.product}</h1>
+                    </div>
+                    <button  onClick={() => { props.inc() }}>Inc </button>
+                    <button  onClick={() => { props.dec() }}>Dec</button>
+                </div>
+            )
+       
+           }
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+           const mapStateToProps = (state)=>{ 
+                 // we get state here (as parameter) from the store and this function returns a json object to the props.
+                 // inside our functional component we use access this object as props.product.
+               return {
+                   product : state.product
+                  }
+           }
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+           const mapDispatchToProps = (dispatch) =>{
+               // we get dispatch as a paramenter value we can use dispatch to send actions to modify state.
+               // make sure the action you specify here has some meaning defined inside the reducer.
+                 return {
+                     inc : ()=>{ dispatch( { type: 'INC'} )}
+                     dec : ()=>{ dispatch( { type: 'DEC'} )}
+                 }
+           }
+            // connecting both states and dispatch to functional component.
+           export default connect(mapStateToProps,mapDispatchToProps)(Component) 
+    ...
 
-### `npm run eject`
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+  ### What are combine Reducers?
+   The above implementation works when there is only one reducer what if there are more than one reducer then we cant just put a all the 
+   reducers as arguments in create store function the createStore is not defined like that, it can have only one reducer as an argument .
+   So in order to solve this problem we need to make a reducer which have all the reducers in it.
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+         ...
+         import { combineReducers } from "redux";
+        import Product from "./Reducer1";
+        import Product1 from "./Reducer2";
+        
+        export default combineReducers({
+          product : Product,
+          product1 : Product1
+        })
+         ...
+    
+  Now we have to make a small change inside our components that is
+          
+          ...
+            Instead of 
+            <p> props.product</p>
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+            we have to get value of product as
+            <p>props.product.product</p>
 
-## Learn More
+              because now state we are getting is
+      
+            {
+              product: {
+                    product: value
+              },
+              product1: {
+                    product1: value1
+              }
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+            }    
+         ...
