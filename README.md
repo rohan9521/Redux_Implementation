@@ -1,7 +1,7 @@
 # Redux
   ### What is Redux?
   ### What are components of Redux?
-  ### What is CombineRedcucer ?
+  ### What is CombineReducer ?
   ### Why use Redux instead of Context API?
 
 
